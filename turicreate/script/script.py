@@ -4,7 +4,7 @@ import pandas as pd
 from s3fs.core import S3FileSystem
 
 import time
-time.sleep(5) # HAcky way of avoiding waiting for the buckets to be created by docker.
+time.sleep(5) # Hacky way of avoiding having to check if the buckets have been created by docker.
 
 os.environ['AWS_ACCESS_KEY_ID'] = 'minio'
 os.environ['AWS_SECRET_ACCESS_KEY'] = 'minio123'
@@ -37,7 +37,7 @@ except:
     raise
 
 
-# This doesn't work and will error out
+# This doesn't work and will error out despite the turicreate being configured to use the same parameters
 print('\nNow try and get the same csv using Turicreate...')
 try:
     sf = tc.SFrame.read_csv('s3://output/sample.csv')
