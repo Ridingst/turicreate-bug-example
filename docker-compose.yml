@@ -47,7 +47,7 @@ services:
       - aws
     command: |-
       bash -c "
-        aws --endpoint-url='${AWS_ENDPOINT}' s3api head-bucket --bucket $$bucket &> /dev/null ||
+        aws --endpoint-url='http://minio:9000' s3api head-bucket --bucket 'output' &> /dev/null ||
           aws --endpoint-url='http://minio:9000' s3api create-bucket --bucket 'output';
           aws --endpoint-url='http://minio:9000' s3api put-object --bucket 'output' --key 'sample.csv' --body /usr/local/sample.csv;
       "
