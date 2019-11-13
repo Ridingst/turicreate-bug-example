@@ -1,0 +1,53 @@
+version: '3'
+
+networks:
+  aws:
+
+services:
+
+  minio:
+    image: minio/minio
+    ports:
+      - "9001:9000"
+    environment:
+      MINIO_ACCESS_KEY: minio
+      MINIO_SECRET_KEY: minio123
+    networks:
+      - aws
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://minio:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    command: "server /data"
+
+
+  turicreate:
+    build: turicreate/.
+    depends_on:
+      - create_s3_buckets
+        
+    networks:
+      - aws
+    links:
+      - minio
+    ports:
+      - "8888:8888"
+    command: python -u /usr/local/script.py
+
+
+  create_s3_buckets:
+    build: awscli/.
+    depends_on:
+      - minio
+    environment:
+      - AWS_ACCESS_KEY_ID=minio
+      - AWS_SECRET_ACCESS_KEY=minio123
+    networks:
+      - aws
+    command: |-
+      bash -c "
+        aws --endpoint-url='${AWS_ENDPOINT}' s3api head-bucket --bucket $$bucket &> /dev/null ||
+          aws --endpoint-url='http://minio:9000' s3api create-bucket --bucket 'output';
+          aws --endpoint-url='http://minio:9000' s3api put-object --bucket 'output' --key 'sample.csv' --body /usr/local/sample.csv;
+      "
